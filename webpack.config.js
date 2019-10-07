@@ -1,9 +1,9 @@
 const webpack = require("webpack");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const autoprefixer = require("autoprefixer");
 
-const browserConfig = {
-  entry: "./src/browser/index.js",
+const clientConfig = {
+  entry: "./src/client/index.js",
   output: {
     path: __dirname,
     filename: "./public/bundle.js"
@@ -20,30 +20,31 @@ const browserConfig = {
         }
       },
       {
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          use: [
-            {
-              loader: "css-loader",
-              options: { importLoaders: 1 }
-            },
-            {
-              loader: "postcss-loader",
-              options: { plugins: [autoprefixer()] }
-            }
-          ]
-        })
+        test: /\.*css$/,
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader
+          },
+          {
+            loader: "css-loader",
+            options: { importLoaders: 2 }
+          },
+          {
+            loader: "postcss-loader",
+            options: { plugins: [autoprefixer()] }
+          },
+          'sass-loader'
+        ]
       },
       {
-        test: /js$/,
+        test: /\.jsx?$/,
         exclude: /(node_modules)/,
-        loader: "babel-loader",
-        query: { presets: ["react-app"] }
+        loader: "babel-loader"
       }
     ]
   },
   plugins: [
-    new ExtractTextPlugin({
+    new MiniCssExtractPlugin({
       filename: "public/css/[name].css"
     })
   ]
@@ -70,21 +71,24 @@ const serverConfig = {
         }
       },
       {
-        test: /\.css$/,
+        test: /\.*css$/,
         use: [
           {
-            loader: "css-loader/locals"
-          }
+            loader: 'css-loader',
+            options: {
+              onlyLocals: true,
+            },
+          },
+          'sass-loader'
         ]
       },
       {
-        test: /js$/,
+        test: /\.jsx?$/,
         exclude: /(node_modules)/,
-        loader: "babel-loader",
-        query: { presets: ["react-app"] }
+        loader: "babel-loader"
       }
     ]
   }
 };
 
-module.exports = [browserConfig, serverConfig];
+module.exports = [clientConfig, serverConfig];
